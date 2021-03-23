@@ -13,6 +13,7 @@ library(afex)
 library(reshape2)
 library(dplyr)
 library(ggpubr)
+library(magrittr)
 
 ### Define a ggplot theme
 thm <- theme(axis.text.x = element_text(size = 12, color = "black"),
@@ -129,24 +130,30 @@ fit.dat <- data.frame(Beta.all.fit, Beta.Or.fit, Beta.Cv.fit, x = seq(0.01, 0.99
 fit.dat2 <- melt(fit.dat, id.vars = "x")
 
 # Plot the regression lines
+dat <- Prop.Rice.herb[Prop.Rice.herb$Stage != "Seedling", ] %>%
+  slice(c(1, 1:n())) %>%
+  mutate(Farmtype = as.character(Farmtype),
+         Farmtype = c("Combined", Farmtype[-1]),
+         Farmtype = factor(Farmtype, levels = c("Or", "Cv", "Combined"), ordered = T))
+
 P2 <- ggplot() +
-  geom_point(data = Prop.Rice.herb[Prop.Rice.herb$Stage != "Seedling",], aes(x = Rel.Abd, y = Mean, shape = Farmtype), size = 2) +
-  geom_line(data = filter(fit.dat2, variable != "Beta.all.fit"), aes(x = x, y = value, group = variable, linetype = variable), size = 1) +
-  geom_line(data = filter(fit.dat2, variable == "Beta.all.fit"), aes(x = x, y = value), size = 1, linetype = 4) +
+  geom_point(data = dat, aes(x = Rel.Abd, y = Mean, shape = Farmtype), size = 2) +
+  geom_line(data = fit.dat2, aes(x = x, y = value, group = variable, linetype = variable), size = 1) +
   ylim(0, 1) +
   xlim(0, 1) +
   thm +
   theme(legend.background = element_rect(color = "transparent", fill = "transparent"),
         legend.position = c(0.225, 0.9),
         legend.key.height = unit(0.5, "cm"),
-        legend.key.width = unit(1, "cm"),
+        legend.key.width = unit(1.1, "cm"),
         legend.key.size = unit(0.4, "line"),
-        legend.text = element_text(size = 12)) +
+        legend.text = element_text(size = 12),
+        plot.margin = unit(c(0.1, 0.1, 0.1, 0.1),"null")) +
   xlab("Relative abundance of rice herbivores") +
   ylab("Proportion of rice herbivores in \n predators' diet") +
-  scale_shape_manual(values = c(16, 21), label = c("Organic", "Conventional"), name = "") +
-  scale_linetype_manual(values = c(1, 5), label = c("Organic", "Conventional"), name = "") +
-  guides(linetype = guide_legend(override.aes = list(linetype = c(1, 2))))
+  scale_shape_manual(values = c(16, 21, NA), label = c("Organic", "Conventional", "Combined"), name = "") +
+  scale_linetype_manual(values = c(4, 1, 5), label = c("Organic", "Conventional", "Combined"), name = "") +
+  guides(linetype = guide_legend(override.aes = list(linetype = c(1, 2, 4))))
 
 P2
 ggsave("Output/Figures/Beta_reg_rel_abd.tiff", width = 6, height = 5, dpi = 600)
