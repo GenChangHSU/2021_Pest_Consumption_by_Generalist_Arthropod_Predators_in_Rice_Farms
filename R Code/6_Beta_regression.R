@@ -71,7 +71,17 @@ lrtest(beta.out)
 Anova(beta.out, test.statistic = "F")
 
 # Model diagnostics
-plot(scale(beta.out$fitted.values), scale(beta.out$residuals))
+ggplot(data = data.frame(x = beta.out$fitted.values, y = beta.out$residuals),
+       aes(x = x, y = y)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = 2) +
+  stat_smooth(se = F, color = "red") +
+  labs(x = "Predicted values", y = "Residuals") +
+  thm +
+  theme(plot.margin = unit(c(0.1, 0.1, 0.1, 0.1),"null"))
+
+ggsave("./Output/Figures/Res_plot_1.tiff", width = 5, height = 4, dpi = 600)
+
 summary(lm(scale(beta.out$residuals)~scale(beta.out$fitted.values)))
 qqnorm(scale(beta.out$residuals))
 
@@ -144,4 +154,5 @@ ggsave("Output/Figures/Beta_reg_rel_abd.tiff", width = 6, height = 5, dpi = 600)
 # # Arrange the two plots
 # ggarrange(P1, P2, labels = c("(a)", "(b)"), label.x = 0.2)
 # ggsave("Output/Figures/Beta_reg.tiff", width = 10, height = 4.5, dpi = 600)
+
 
