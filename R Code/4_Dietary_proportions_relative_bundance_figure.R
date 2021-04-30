@@ -14,7 +14,14 @@ Summary$Landscape <- ordered(Summary$Landscape, levels = c("Mount", "Land", "Sea
 Summary$Stage <- ordered(Summary$Stage, levels = c("Seedling", "Tillering", "Flowering", "Ripening"))
 Summary$Source <- ordered(Summary$Source, levels = c("Rice.herb", "Tour.herb", "Detritivore"))
 
-Summary2 <- ddply(Summary, c("Farmtype", "Stage", "Source"), summarise, mean = mean(Mean), Sd = sd(Mean), n = length(Mean), Se = Sd/sqrt(n))
+Summary2 <- ddply(Summary, c("Farmtype", "Stage", "Source"),
+                  summarise,
+                  mean = mean(Mean),
+                  Sd = sd(Mean),
+                  Sd.b = sum(SD),
+                  n = length(Mean),
+                  Se = Sd/sqrt(n),
+                  Se.b = Sd.b/sqrt(n))
 Summary2$Farmtype2 <- as.character(Summary2$Farmtype) %>%
   replace(as.character(Summary2$Farmtype) == "Or", "Organic") %>%
   replace(as.character(Summary2$Farmtype) == "Cv", "Conventional")
@@ -59,9 +66,47 @@ P1 <- ggplot(Summary2[Summary2$Stage != "Seedling", ] , aes(x = Stage, y = mean,
         legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent")) +
   scale_color_manual(values=c("#00BA38", "#619CFF", "#993300"), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore"), name = "") +
   scale_shape_manual(values=c(15, 16, 17), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore"), name = "") +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.01))+
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf) +
+  annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf)
+
+P1.b <- ggplot(Summary2[Summary2$Stage != "Seedling", ] , aes(x = Stage, y = mean, color = Source, shape = Source, group = Source)) +
+  geom_point(size = 3, position = position_dodge(0.1)) +
+  geom_line(size = 1, position = position_dodge(0.1)) +
+  facet_grid(~Farmtype2) +
+  geom_errorbar(aes(ymin = ifelse((mean-Se.b)>0, mean-Se.b, 0), ymax = ifelse((mean+Se.b)<1, mean+Se.b, 1)), width = 0.2, position = position_dodge(0.1), size = 0.6) +
+  xlab(NULL) +
+  ylab(paste("Proportion of prey sources in \n predators' diet", " (Mean ", "\u00B1", " SE)", sep = "")) +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.title.x = element_text(size = 12.5, margin = margin(t = 12)),
+        axis.title.y = element_text(size = 12.5, margin = margin(r = 10)),
+        plot.margin = unit(c(0.5, 0.2, 0.2, 0.2), "cm"),
+        panel.background = element_rect(fill = NA),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.border = element_blank(),
+        strip.background = element_rect(fill = NA, color = "transparent"),
+        strip.text.x = element_text(size = 10),
+        legend.position = c(0.5, 1.15),
+        legend.direction = "horizontal",
+        legend.spacing.x = unit(0.2, "cm"),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(0, "line"),
+        legend.key = element_blank(),
+        legend.text = element_text(size = 8.5),
+        legend.title = element_text(size = 10),
+        legend.title.align = 0.5,
+        legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent")) +
+  scale_color_manual(values=c("#00BA38", "#619CFF", "#993300"), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore"), name = "") +
+  scale_shape_manual(values=c(15, 16, 17), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore"), name = "") +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1))+
   annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf) +
   annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf)
+
 
 ### Load the arthropod abundance data
 Abundance <- read.xlsx("Data_raw/Arthropod abundance data sheet.xlsx", header = T, sheetIndex = 1)
@@ -173,12 +218,83 @@ P2 <- ggplot(Source.Abd.Summary, aes(x = Stage, y = Rel.Abd, color = Trophic, sh
         legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent")) +
   scale_color_manual(values=c("#00BA38", "#619CFF", "#993300"), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore"), name = "", guide = F)+
   scale_shape_manual(values=c(15, 16, 17), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore"), name = "", guide = F) +
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 1))+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.01))+
   annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf) +
   annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf)
 
 ggarrange(P1, P2, labels = c("(a)", "(b)"), label.x = 0.02, nrow = 2)
 ggsave("Output/Figures/Diet_prop_rel_abd.tiff", width = 7, height = 6, dpi = 600)
+
+# W/O error propagation
+ggarrange(P1, P1.b, nrow = 2, legend = "none",
+          labels = c("No error propagation (original figure)",
+                     "                          Error propagation"),
+          label.x = 0)
+ggsave("Output/Figures/Diet_prop.tiff", width = 7, height = 6, dpi = 600)
+
+
+### Mean number of predator individuals in the samples
+ggplot(data = Predator.Mean,
+       aes(x = Stage,
+           y = Mean.Abd,
+           shape = Farmtype,
+           group = Farmtype,
+           linetype = Farmtype)) +
+  geom_line(position = position_dodge(width = 0.2)) +
+  geom_errorbar(aes(ymax = Mean.Abd + SE, ymin = Mean.Abd - SE),
+                position = position_dodge(width = 0.2),
+                width = 0.25, linetype = "solid") +
+  geom_point(position = position_dodge(width = 0.2), fill = "white", size = 3) +
+  labs(x = "Crop stage", y = paste("Number of individuals", " (Mean ", "\u00B1", " SE)", sep = "")) +
+  scale_shape_manual(values = c(16, 21), labels = c("Organic", "Conventional")) +
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Organic", "Conventional")) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 15.5), breaks = c(0, 5, 10, 15)) +
+  theme(# Axis
+          axis.text.x = element_text(size = 12, color = "black"),
+          axis.text.y = element_text(size = 12, color = "black"),
+          axis.title.x = element_text(size = 15, margin = margin(t = 10)),
+          axis.title.y = element_text(size = 15, margin = margin(r = 8)),
+
+          # Plot
+          plot.title = element_text(hjust = 0.5, size = 18),
+          plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm"),
+          plot.background = element_rect(colour = "transparent"),
+
+          # Panel
+          panel.background = element_rect(fill = "transparent"),
+          panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank(),
+
+          # Legend
+          legend.position = c(0.75, 0.75),
+          legend.spacing.x = unit(0.2, "cm"),
+          legend.key.width = unit(1, "cm"),
+          legend.key.size = unit(1, "line"),
+          legend.key = element_blank(),
+          legend.text = element_text(size = 10),
+          legend.box.just = "center",
+          legend.justification = c(0.5, 0.5),
+          legend.title.align = 0.5,
+          legend.title = element_blank(),
+          legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "white"),
+
+          # Facet strip
+          strip.background = element_rect(fill = "transparent"),
+          strip.text = element_text(size = 12, hjust = 0.5)
+          )
+
+ggsave("Output/Figures/Predator_abd.tiff", width = 5, height = 4.5, dpi = 600)
+
+
+
+
+
+
+
+
 
 
 

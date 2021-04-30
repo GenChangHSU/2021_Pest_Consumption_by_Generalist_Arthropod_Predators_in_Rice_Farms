@@ -116,8 +116,8 @@ discr <- load_discr_data(filename = "Output/Data_clean/Discrimination.csv", mix)
 ### Prey source biplot (TDF-corrected)
 d13C_correct <- sapply(1:nrow(Source), function(x){Source[x, 2] + Discrimination[which(Discrimination$Source == Source[x, 1]), 2]})
 d15N_correct <- sapply(1:nrow(Source), function(x){Source[x, 3] + Discrimination[which(Discrimination$Source == Source[x, 1]), 4]})
-Source_correct <- data.frame(Source = Source$Source, d13C_correct, d15N_correct)
-Source_correct <- ddply(Source_correct, "Source", summarise, Mean_d13C = mean(d13C_correct), Se_d13C = sd(d13C_correct)/sqrt(length(d13C_correct)), Mean_d15N = mean(d15N_correct), Se_d15N = sd(d15N_correct)/sqrt(length(d15N_correct)))
+Source_correct0 <- data.frame(Source = Source$Source, d13C_correct, d15N_correct)
+Source_correct <- ddply(Source_correct0, "Source", summarise, Mean_d13C = mean(d13C_correct), Se_d13C = sd(d13C_correct)/sqrt(length(d13C_correct)), Mean_d15N = mean(d15N_correct), Se_d15N = sd(d15N_correct)/sqrt(length(d15N_correct)))
 
 # Stable isotope signatures of primary producer
 SID2017 <- read.xlsx("Data_raw/SID2017.xlsx", header = T, sheetIndex = 1)
@@ -131,15 +131,15 @@ Mean.d15N.rice <- mean(SID2017.Rice$d_15N)
 SE.d15N.rice <- sd(SID2017.Rice$d_15N)/sqrt(length(SID2017.Rice$d_15N))
 Rice.all <- as.data.frame(cbind(Mean.d13C.rice, SE.d13C.rice, Mean.d15N.rice, SE.d15N.rice))
 
+# Biplot (all)
 ggplot() +
-  geom_point(data = Source_correct, aes(x = Mean_d13C, y = Mean_d15N, color = Source, shape = Source), size = 4) +
-  geom_errorbar(data = Source_correct, aes(x = Mean_d13C, ymin = Mean_d15N-Se_d15N, ymax = Mean_d15N+Se_d15N, color = Source), width = 0.1, size = 1.2) +
-  geom_errorbarh(data = Source_correct, aes(y = Mean_d15N, xmin = Mean_d13C-Se_d13C, xmax = Mean_d13C+Se_d13C, color = Source), height = 0.1, size = 1.2) +
-  geom_point(data = Rice.all, aes(x = Mean.d13C.rice, y = Mean.d15N.rice), size = 1) +
-  geom_errorbar(data = Rice.all, aes(x = Mean.d13C.rice, ymin = Mean.d15N.rice-SE.d15N.rice, ymax = Mean.d15N.rice+SE.d15N.rice), width = 0.1, size = 1.2) +
-  geom_errorbarh(data = Rice.all, aes(y = Mean.d15N.rice, xmin = Mean.d13C.rice-SE.d13C.rice, xmax = Mean.d13C.rice+SE.d13C.rice), height = 0.1, size = 1.2) +
-  ylim(5, 11) +
-  xlim(-31, -21) +
+  geom_point(data = Source_correct, aes(x = Mean_d13C, y = Mean_d15N, color = Source, shape = Source), size = 2.5) +
+  geom_errorbar(data = Source_correct, aes(x = Mean_d13C, ymin = Mean_d15N-Se_d15N, ymax = Mean_d15N+Se_d15N, color = Source), width = 0.3, size = 1) +
+  geom_errorbarh(data = Source_correct, aes(y = Mean_d15N, xmin = Mean_d13C-Se_d13C, xmax = Mean_d13C+Se_d13C, color = Source), height = 0.3, size = 1) +
+  geom_point(data = Rice.all, aes(x = Mean.d13C.rice, y = Mean.d15N.rice), size = 2.5) +
+  geom_errorbar(data = Rice.all, aes(x = Mean.d13C.rice, ymin = Mean.d15N.rice-SE.d15N.rice, ymax = Mean.d15N.rice+SE.d15N.rice), width = 0.3, size = 1) +
+  geom_errorbarh(data = Rice.all, aes(y = Mean.d15N.rice, xmin = Mean.d13C.rice-SE.d13C.rice, xmax = Mean.d13C.rice+SE.d13C.rice), height = 0.3, size = 1) +
+  geom_point(data = Source_correct0, aes(x = d13C_correct, y = d15N_correct, color = Source), alpha = 0.35) +
   theme(axis.text.x = element_text(size = 12, color = "black"),
         axis.text.y = element_text(size = 12, color = "black"),
         axis.title.x = element_text(size = 15, margin = margin(t = 10)),
@@ -153,7 +153,7 @@ ggplot() +
         panel.grid.minor.x = element_blank(),
         panel.grid.major.y = element_blank(),
         panel.grid.minor.y = element_blank(),
-        legend.position = c(0, 1.05),
+        legend.position = c(0.6, 1.05),
         legend.spacing.x = unit(0.25, "cm"),
         legend.key.width = unit(0.7, "cm"),
         legend.key.size = unit(1.2, "line"),
@@ -166,9 +166,75 @@ ggplot() +
   labs(x = expression(paste(delta^{13}, "C (\u2030)", sep = "")), y = expression(paste(delta^{15}, "N (\u2030)", sep = ""))) +
   scale_color_manual(values=c("#00BA38", "#619CFF", "#993300"), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore"), name = "") +
   scale_shape_manual(values=c(15, 16, 17), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore"), name = "") +
-  annotate(geom = "text", x = -28.3, y = 5.5, label = "Rice plant", size = 4.5)
+  annotate(geom = "text", x = -30, y = 4.5, label = "Rice plant", size = 4.5) +
+  ylim(c(0, 20))
 
 ggsave("Output/Figures/Biplot.tiff", width = 6, height = 5, dpi = 600)
+
+
+# Biplot by farm type and crop stages
+Source_correct2 <- data.frame(Source = Source$Source,
+                              d13C_correct,
+                              d15N_correct,
+                              Farmtype = factor(c(as.character(Rice.herb.dat$Farmtype),
+                                                  as.character(Tour.herb.dat$Farmtype),
+                                                  as.character(Detritivore.dat$Farmtype)),
+                                                levels = c("Or", "Cv"),
+                                                ordered = T),
+                              Stage = factor(c(as.character(Rice.herb.dat$Stage),
+                                               as.character(Tour.herb.dat$Stage),
+                                               as.character(Detritivore.dat$Stage)),
+                                             levels = c("Seedling", "Tillering", "Flowering", "Ripening"),
+                                             ordered = T))
+
+
+Source_correct2_df <- Source_correct2 %>%
+  group_by(Source, Farmtype, Stage) %>%
+  summarise(Mean_d13C = mean(d13C_correct),
+            Mean_d15N = mean(d15N_correct),
+            SD_d13C = sd(d13C_correct),
+            SD_d15N = sd(d15N_correct),
+            n = n(),
+            Se_d13C = SD_d13C/sqrt(n),
+            Se_d15N = SD_d15N/sqrt(n))
+
+ggplot() +
+  geom_errorbar(data = Source_correct2_df, aes(x = Mean_d13C, ymin = Mean_d15N-Se_d15N, ymax = Mean_d15N+Se_d15N, color = Source), width = 0.6, size = 0.7) +
+  geom_errorbarh(data = Source_correct2_df, aes(y = Mean_d15N, xmin = Mean_d13C-Se_d13C, xmax = Mean_d13C+Se_d13C, color = Source), height = 0.6, size = 0.7) +
+  geom_point(data = Source_correct2_df, aes(x = Mean_d13C, y = Mean_d15N, color = Source, shape = Farmtype), size = 2.5, fill = "white") +
+  facet_wrap(~Stage, nrow = 2) +
+  theme(axis.text.x = element_text(size = 12, color = "black"),
+        axis.text.y = element_text(size = 12, color = "black"),
+        axis.title.x = element_text(size = 15, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 15, margin = margin(r = 8)),
+        plot.title = element_text(hjust = 0.5, size = 18),
+        plot.margin = rep(unit(0.05,"null"), 4),
+        panel.background = element_rect(fill = "transparent"),
+        plot.background = element_rect(colour = "transparent"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_text(size = 12),
+        legend.position = "right",
+        legend.spacing.x = unit(0.25, "cm"),
+        legend.key.width = unit(0.7, "cm"),
+        legend.key.size = unit(1.2, "line"),
+        legend.key = element_blank(),
+        legend.text = element_text(size = 10),
+        legend.box.just = "center",
+        legend.justification = c(-0.2, 0.5),
+        legend.title.align = 0.5,
+        legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent")) +
+  labs(x = expression(paste(delta^{13}, "C (\u2030)", sep = "")), y = expression(paste(delta^{15}, "N (\u2030)", sep = ""))) +
+  scale_color_manual(name = "Prey source", values=c("#00BA38", "#619CFF", "#993300"), labels = c("Rice herbivore", "Tourist herbivore", "Detritivore")) +
+  scale_shape_manual(name = "Farm type", values=c(16, 21), labels = c("Organic", "Conventional")) +
+  xlim(c(-30, -15)) +
+  ylim(c(4.5, 15))
+
+ggsave("Output/Figures/Biplot_farmtype_stage.tiff", width = 7.5, height = 5.5, dpi = 600)
 
 
 ### Write JAGS file

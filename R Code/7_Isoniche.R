@@ -152,3 +152,20 @@ ggarrange(P_farmtype, P_cropstage, labels = c("(a)", "(b)"),
 
 ggsave("Isospace2.tiff", width = 10, height = 4.5, dpi = 600)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

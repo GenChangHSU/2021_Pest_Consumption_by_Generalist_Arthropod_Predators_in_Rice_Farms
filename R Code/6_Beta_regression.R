@@ -158,7 +158,7 @@ P2 <- ggplot() +
 P2
 ggsave("Output/Figures/Beta_reg_rel_abd.tiff", width = 6, height = 5, dpi = 600)
 
-# # Arrange the two plots
+### Arrange the two plots
 # ggarrange(P1, P2, labels = c("(a)", "(b)"), label.x = 0.2)
 # ggsave("Output/Figures/Beta_reg.tiff", width = 10, height = 4.5, dpi = 600)
 

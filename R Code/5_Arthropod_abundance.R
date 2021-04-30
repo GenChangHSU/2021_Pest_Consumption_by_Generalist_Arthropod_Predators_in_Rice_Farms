@@ -21,7 +21,7 @@ Abundance <- Abundance %>% select(1:4) %>%
     Detritivore = c("Chi", "Sci", "Mus", "Eph", "Emp", "Str", "Chl", "Ter"),
     Predator = c("Ara", "Coc", "Tet"),
     other_level = "Others")) %>%
-  mutate(Trophic = factor(Trophic, levels = c("Rice_herb", "Tourist_herb", "Detritivore", "Predator", "Others"), ordered = T))
+  mutate(Trophic = factor(Trophic, levels = c("Predator", "Rice_herb", "Tourist_herb", "Detritivore", "Others"), ordered = T))
 
 
 ### Summary of the abundance data
@@ -40,18 +40,24 @@ b <- text_grob("(b)")
 c <- text_grob("(c)")
 d <- text_grob("(d)")
 
+blank_points <- data.frame(x = c(1, 1, 1, 1),
+                           y = c(6, 26, 15, 210),
+                           Trophic = factor(c("Predator", "Rice_herb", "Tourist_herb", "Detritivore"),
+                                            levels = c("Predator", "Rice_herb", "Tourist_herb", "Detritivore"),
+                                            ordered = T),
+                           Farm_type = "Organic")
+
 P <- ggplot(data = Abd_summary, aes(x = Crop_stage, y = Mean, color = Trophic, shape = Farm_type)) +
-  geom_point(position = position_dodge(width = 0.1), size = 2) +
   geom_line(aes(group = Farm_type, linetype = Farm_type), position = position_dodge(width = 0.1)) +
   geom_errorbar(aes(ymin = Mean - SE, ymax = Mean + SE), width = 0, position = position_dodge(width = 0.1)) +
+  geom_point(position = position_dodge(width = 0.1), size = 2.5, fill = "white") +
   facet_wrap(~Trophic, scales = "free_y", labeller = as_labeller(c("Rice_herb" = "Rice herbivore", "Tourist_herb" = "Tourist herbivore", "Detritivore" = "Detritivore", "Predator" = "Predator"))) +
   labs(x = "Crop stage", y = "Number of individuals (Mean \u00B1 SE)") +
-  scale_color_manual(values = c("#00BA38", "#619CFF", "#993300", "Black"), guide = F) +
-  scale_shape_manual(values = c(16, 1)) +
+  scale_color_manual(values = c("Black", "#00BA38", "#619CFF", "#993300"), guide = F) +
+  scale_shape_manual(values = c(16, 21)) +
   scale_y_continuous(limits =  c(0, NA)) +
-  geom_point(data = data.frame(x = 1, y = 15, Trophic = "Tourist_herb", Farm_type = "Organic"), aes(x = x, y = y), alpha = 0) +
-  geom_point(data = data.frame(x = 1, y = 6, Trophic = "Predator", Farm_type = "Organic"), aes(x = x, y = y), alpha = 0) +
-  theme(axis.text.x = element_text(size = 12, color = "black"),
+  geom_point(data = blank_points, aes(x = x, y = y), alpha = 0) +
+  theme(axis.text.x = element_text(size = 10, color = "black"),
         axis.text.y = element_text(size = 12, color = "black"),
         axis.title.x = element_text(size = 15, margin = margin(t = 10)),
         axis.title.y = element_text(size = 15, margin = margin(r = 6)),
@@ -71,19 +77,22 @@ P <- ggplot(data = Abd_summary, aes(x = Crop_stage, y = Mean, color = Trophic, s
         legend.key.size = unit(2, "line"),
         legend.key = element_blank(),
         legend.text = element_text(size = 10),
+        legend.direction = "horizontal",
+        legend.position = "top",
         legend.box.just = "center",
-        legend.justification = c(0, 0.5),
+        legend.box.margin = margin(b = -15),
+        legend.justification = c(0.5, 0),
         legend.title.align = 0.5,
         legend.title = element_blank(),
         legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent"))
 
 ggdraw(P) +
-  draw_plot(a, x = 0.03, y = 0.9, width = 0.1, height = 0.1) +
-  draw_plot(b, x = 0.42, y = 0.9, width = 0.1, height = 0.1) +
-  draw_plot(c, x = 0.03, y = 0.47, width = 0.1, height = 0.1) +
-  draw_plot(d, x = 0.42, y = 0.47, width = 0.1, height = 0.1)
+  draw_plot(a, x = 0.075, y = 0.84, width = 0.1, height = 0.1) +
+  draw_plot(b, x = 0.53, y = 0.84, width = 0.1, height = 0.1) +
+  draw_plot(c, x = 0.075, y = 0.44, width = 0.1, height = 0.1) +
+  draw_plot(d, x = 0.53, y = 0.44, width = 0.1, height = 0.1)
 
-ggsave("Abundance.tiff", width = 10, height = 6, dpi = 600)
+ggsave("Output/Figures/Abundance.tiff", width = 7, height = 6, dpi = 600)
 
 
 ### Main taxa
