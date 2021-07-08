@@ -1,7 +1,17 @@
 
+<style> 
+body{
+  font-size: 14pt;
+}
+</style>
+
 # Pest consumption by generalist arthropod predators increases with crop stage in both organic and conventional farms
 
-# Abstract
+Hsu, G.-C., J.-A. Ou, and C.-K. Ho. 2021. Pest consumption by generalist
+arthropod predators increases withcrop stage in both organic and
+conventional farms. *Ecosphere* 12:e03625.
+
+## Abstract
 
 Biocontrol agents are critical for pest management in sustainable
 agriculture. Generalist arthropod predators may hold a great potential
@@ -35,6 +45,6 @@ encourage modern agriculture to develop techniques to support robust
 populations of these predators and the ecosystem services that they
 provide.
 
-# Article link
+## Article link
 
 <https://doi.org/10.1002/ecs2.3625>
