@@ -1,7 +1,7 @@
 
 ## Pest consumption by generalist arthropod predators increases with crop stage in both organic and conventional farms
 
-Hsu, G.-C., J.-A. Ou, and C.-K. Ho. 2021. Pest consumption by generalist
+Hsu, G-C., J-A. Ou, and C-K. Ho. 2021. Pest consumption by generalist
 arthropod predators increases withcrop stage in both organic and
 conventional farms. *Ecosphere* 12:e03625.
 
