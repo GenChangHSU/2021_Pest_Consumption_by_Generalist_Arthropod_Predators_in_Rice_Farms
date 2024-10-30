@@ -3,7 +3,7 @@
 
 __Hsu, G-C.__, J-A. Ou, and C-K. Ho. 2021. Pest consumption by generalist
 arthropod predators increases withcrop stage in both organic and
-conventional farms. __*Ecosphere*__ 12: e03625.
+conventional farms. *Ecosphere* 12: e03625.
 
 ## Abstract
 
